@@ -70,8 +70,6 @@ static void *prova(void *arg)
 	          return NULL;           
            }
            
-        	
-
 }
 */
 

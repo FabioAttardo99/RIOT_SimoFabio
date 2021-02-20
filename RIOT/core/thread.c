@@ -28,7 +28,7 @@
 #include "thread.h"
 #include "irq.h"
 
-#define ENABLE_DEBUG    (0)
+#define ENABLE_DEBUG    (1)
 #include "debug.h"
 #include "bitarithm.h"
 #include "sched.h"
@@ -148,7 +148,7 @@ void thread_yield(void)
     thread_yield_higher();
 }
 
-void thread_add_to_list(list_node_t *list, thread_t *thread)
+void thread_add_to_list(list_node_t  *list, thread_t *thread)
 {
     assert(thread->status < STATUS_ON_RUNQUEUE);
 
@@ -299,6 +299,8 @@ kernel_pid_t thread_create(char *stack, int stacksize, uint8_t priority,
 
     DEBUG("Created thread %s. PID: %" PRIkernel_pid ". Priority: %u.\n", name,
           thread->pid, priority);
+
+
 
     if (flags & THREAD_CREATE_SLEEPING) {
         sched_set_status(thread, STATUS_SLEEPING);

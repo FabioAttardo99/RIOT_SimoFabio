@@ -144,6 +144,7 @@ typedef enum {
  */
 thread_t *sched_run(void);
 
+
 /**
  * @brief   Set the status of the specified process
  *

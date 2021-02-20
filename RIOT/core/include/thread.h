@@ -155,7 +155,7 @@ struct _thread {
     char *sp;                       /**< thread's stack pointer         */
     thread_status_t status;         /**< thread's status                */
     uint8_t priority;               /**< thread's priority              */
-
+    //Aggiungere il tempo del thread
     kernel_pid_t pid;               /**< thread's process id            */
 
 #if defined(MODULE_CORE_THREAD_FLAGS) || defined(DOXYGEN)

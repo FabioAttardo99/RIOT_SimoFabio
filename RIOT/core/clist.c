@@ -49,6 +49,7 @@
 
 #include "clist.h"
 
+
 clist_node_t *_clist_sort(clist_node_t *list, clist_cmp_func_t cmp)
 {
     clist_node_t *p, *q, *e;

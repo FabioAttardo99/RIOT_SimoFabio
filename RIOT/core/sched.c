@@ -32,7 +32,7 @@
 #include "mpu.h"
 #endif
 
-#define ENABLE_DEBUG (0)
+#define ENABLE_DEBUG (1)
 #include "debug.h"
 
 #if ENABLE_DEBUG
@@ -117,11 +117,20 @@ static inline unsigned _get_prio_queue_from_runqueue(void)
 #endif
 }
 
+/*
+static int _print_node(clist_node_t *node)
+    {
+         printf("0x%08x ", (unsigned)node);
+         return 0;
+    }
+*/
+
 static void _unschedule(thread_t *active_thread)
 {
     if (active_thread->status == STATUS_RUNNING) {
         active_thread->status = STATUS_PENDING;
     }
+
 
 #ifdef SCHED_TEST_STACK
     if (*((uintptr_t *)active_thread->stack_start) !=
@@ -140,6 +149,10 @@ static void _unschedule(thread_t *active_thread)
 
 thread_t *__attribute__((used)) sched_run(void)
 {
+    for (int i = 0; i < SCHED_PRIO_LEVELS; i++) {
+        if ((int)clist_count(&sched_runqueues[i]) != 0)
+        DEBUG(" -- SCHED_RUN -- CODA %d -> %d \n", i, (int)clist_count(&sched_runqueues[i]));
+    }
     thread_t *active_thread = thread_get_active();
     thread_t *previous_thread = active_thread;
 
@@ -150,7 +163,8 @@ thread_t *__attribute__((used)) sched_run(void)
         }
 
         do {
-            sched_arch_idle();
+            DEBUG("Non ho trovato altri thread!");
+            //sched_arch_idle();
         } while (!runqueue_bitcache);
     }
 
@@ -224,6 +238,11 @@ void sched_set_status(thread_t *process, thread_status_t status)
             clist_rpush(&sched_runqueues[process->priority],
                         &(process->rq_entry));
             _set_runqueue_bit(process);
+
+                      for (int i = 0; i < SCHED_PRIO_LEVELS; i++) {
+                          if ((int)clist_count(&sched_runqueues[i]) != 0)
+        DEBUG(" -- SCHED_SET_STATUS_a -- CODA %d -> %d \n", i, (int)clist_count(&sched_runqueues[i]));
+    }
         }
     }
     else {
@@ -232,6 +251,10 @@ void sched_set_status(thread_t *process, thread_status_t status)
                 "sched_set_status: removing thread %" PRIkernel_pid " from runqueue %" PRIu8 ".\n",
                 process->pid, process->priority);
             clist_lpop(&sched_runqueues[process->priority]);
+               for (int i = 0; i < SCHED_PRIO_LEVELS; i++) {
+                          if ((int)clist_count(&sched_runqueues[i]) != 0)
+        DEBUG(" -- SCHED_SET_STATUS_r -- CODA %d -> %d \n", i, (int)clist_count(&sched_runqueues[i]));
+    }
 
             if (!sched_runqueues[process->priority].next) {
                 _clear_runqueue_bit(process);

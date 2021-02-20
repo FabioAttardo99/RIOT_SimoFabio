@@ -39,6 +39,7 @@ int main(void)
 #include "thread.h"
 #include "msg.h"
 #include "xtimer.h"
+#include "timex.h"
 
 #define THREAD_NUMOF (5U)
 #define THREAD_FIRSTGROUP_NUMOF (3U)
@@ -48,6 +49,7 @@ int main(void)
 
 char t1_stack[THREAD_STACKSIZE_MAIN];
 char t2_stack[THREAD_STACKSIZE_MAIN];
+char t3_stack[THREAD_STACKSIZE_MAIN];
 kernel_pid_t p_main, p1, p2, p3;
 /*
 static void *prova(void *arg)
@@ -76,24 +78,45 @@ static void *prova(void *arg)
 
 void *thread1(void *arg)
 {
+	printf("TIME: %d", xtimer_now_usec());
 	(void) arg;
-    puts("Prima stringa\n");
-    return NULL;
+	thread_t *t = thread_get_active();
+   	puts("Prima stringa");
+   	printf("PID: %d, priority: %d \n", (int)t->pid, (int)t->priority);
+   	return NULL;
 }
 
 void *thread2(void *arg)
 {
+	printf("TIME: %d", xtimer_now_usec());
 	(void) arg;
-   puts("seconda stringa\n");
-   printf("%d", (int)xtimer_now());
+  	thread_t *t = thread_get_active();
+	puts("seconda stringa");
+   	printf("PID: %d, priority: %d \n", (int)t->pid, (int)t->priority);
+    	return NULL;
+}
 
-    return NULL;
+void *thread3(void *arg)
+{
+	printf("TIME: %d", xtimer_now_usec());
+	(void) arg;
+  	thread_t *t = thread_get_active();
+	puts("terza stringa");
+   	printf("PID: %d, priority: %d \n", (int)t->pid, (int)t->priority);
+    	return NULL;
 }
 
 
 int main(void) {
 
   	//xtimer_init();
+  	
+  	xtimer_ticks32_t ret;
+  	ret.ticks32 = _xtimer_now();
+  	printf("ret: %d", (int)ret.ticks32);
+  	
+  	
+  	
 	
 	p1 = thread_create(t1_stack, sizeof(t1_stack), THREAD_PRIORITY_MAIN - 1,
                        THREAD_CREATE_WOUT_YIELD | THREAD_CREATE_STACKTEST,
@@ -101,6 +124,9 @@ int main(void) {
 	p2 = thread_create(t2_stack, sizeof(t2_stack), THREAD_PRIORITY_MAIN - 1,
                        THREAD_CREATE_WOUT_YIELD | THREAD_CREATE_STACKTEST,
                        thread2, NULL, "nr2");
+	p3 = thread_create(t2_stack, sizeof(t3_stack), THREAD_PRIORITY_MAIN - 1,
+                       THREAD_CREATE_WOUT_YIELD | THREAD_CREATE_STACKTEST,
+                       thread2, NULL, "nr3");
                        
                        /*
 	for (unsigned i = 0; i < THREAD_NUMOF; i++) {

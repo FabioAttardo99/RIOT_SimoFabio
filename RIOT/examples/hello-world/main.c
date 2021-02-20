@@ -109,10 +109,11 @@ int main(void) {
 
   	//xtimer_init();
   	
+  	/*
   	xtimer_ticks32_t ret;
   	ret.ticks32 = _xtimer_now();
   	printf("ret: %d", (int)ret.ticks32);
-  	
+  	*/
   	
   	
 	

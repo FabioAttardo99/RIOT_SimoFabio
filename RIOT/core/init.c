@@ -83,13 +83,13 @@ void kernel_init(void)
         thread_create(idle_stack, sizeof(idle_stack),
                       THREAD_PRIORITY_IDLE,
                       THREAD_CREATE_WOUT_YIELD | THREAD_CREATE_STACKTEST,
-                      idle_thread, NULL, "idle");
+                      idle_thread, NULL, "idle", 0);
     }
 
     thread_create(main_stack, sizeof(main_stack),
                   THREAD_PRIORITY_MAIN,
                   THREAD_CREATE_WOUT_YIELD | THREAD_CREATE_STACKTEST,
-                  main_trampoline, NULL, "main");
+                  main_trampoline, NULL, "main", 0);
 
     cpu_switch_context_exit();
 }

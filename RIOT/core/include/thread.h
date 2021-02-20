@@ -157,6 +157,7 @@ struct _thread {
     uint8_t priority;               /**< thread's priority              */
     //Aggiungere il tempo del thread
     kernel_pid_t pid;               /**< thread's process id            */
+    int s_time;                 /**< Tempo di esecuzione del thread */
 
 #if defined(MODULE_CORE_THREAD_FLAGS) || defined(DOXYGEN)
     thread_flags_t flags;           /**< currently set flags            */
@@ -363,7 +364,8 @@ kernel_pid_t thread_create(char *stack,
                            int flags,
                            thread_task_func_t task_func,
                            void *arg,
-                           const char *name);
+                           const char *name,
+                           int s_time);
 
 /**
  * @brief       Retrieve a thread control block by PID.

@@ -188,7 +188,7 @@ uintptr_t thread_measure_stack_free(const char *stack)
 
 kernel_pid_t thread_create(char *stack, int stacksize, uint8_t priority,
                            int flags, thread_task_func_t function, void *arg,
-                           const char *name)
+                           const char *name, int s_time)
 {
     if (priority >= SCHED_PRIO_LEVELS) {
         return -EINVAL;
@@ -267,7 +267,8 @@ kernel_pid_t thread_create(char *stack, int stacksize, uint8_t priority,
     }
 
     sched_threads[pid] = thread;
-
+    // Imposto la service time del thread
+    thread->s_time = s_time;
     thread->pid = pid;
     thread->sp = thread_stack_init(function, arg, stack, stacksize);
 

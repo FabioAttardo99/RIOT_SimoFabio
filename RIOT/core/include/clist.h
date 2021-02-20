@@ -114,7 +114,7 @@ typedef list_node_t clist_node_t;
  */
 static inline void clist_rpush(clist_node_t *list, clist_node_t *new_node)
 {
-    printf("*** Called RPUSH ***");
+    printf("*** Called RPUSH *** \n");
     if (list->next) {
         new_node->next = list->next->next;
         list->next->next = new_node;

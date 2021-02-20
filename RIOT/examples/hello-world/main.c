@@ -40,8 +40,9 @@ int main(void)
 #include "msg.h"
 #include "xtimer.h"
 #include "timex.h"
+#include "mutex.h"
 
-#define THREAD_NUMOF (5U)
+#define THREAD_NUMOF (7U)
 #define THREAD_FIRSTGROUP_NUMOF (3U)
 //static char stacks[THREAD_NUMOF][THREAD_STACKSIZE_MAIN];
 //static const char prios[THREAD_NUMOF] = {THREAD_PRIORITY_MAIN - 1, 4, 3, 2, 1};
@@ -51,56 +52,42 @@ char t1_stack[THREAD_STACKSIZE_MAIN];
 char t2_stack[THREAD_STACKSIZE_MAIN];
 char t3_stack[THREAD_STACKSIZE_MAIN];
 kernel_pid_t p_main, p1, p2, p3;
-/*
-static void *prova(void *arg)
-{
 
-	(void)arg;
-   	thread_t *t = thread_get_active();
-	printf("T%i (prio %i): sono proprio io!\n",
-           (int)t->pid, (int)t->priority);
-           
-        thread_wakeup(t->pid);
-           
-        thread_yield();
-           
-           
-           if(xtimer_now_usec(void) < 3000)
-           {
-	          return NULL;           
-           }
-           
-}
-*/
-
+// static mutex_t lock;
 
 void *thread1(void *arg)
 {
 //	printf("TIME: %d", xtimer_now_usec());
+//	mutex_lock(&lock);
 	(void) arg;
 	thread_t *t = thread_get_active();
-   	puts("Prima stringa");
+   	puts("++ Prima stringa ++");
    	printf("PID: %d, priority: %d \n", (int)t->pid, (int)t->priority);
+//	mutex_unlock(&lock);
    	return NULL;
 }
 
 void *thread2(void *arg)
 {
 //	printf("TIME: %d", xtimer_now_usec());
+//	mutex_lock(&lock);
 	(void) arg;
-  	thread_t *t = thread_get_active();
-	puts("seconda stringa");
-   	printf("PID: %d, priority: %d \n", (int)t->pid, (int)t->priority);
-    	return NULL;
+  	thread_t *t1 = thread_get_active();
+	puts("++ seconda stringa ++");
+   	printf("PID: %d, priority: %d \n", (int)t1->pid, (int)t1->priority);
+//	mutex_unlock(&lock);
+    return NULL;
 }
 
 void *thread3(void *arg)
 {
 //	printf("TIME: %d", xtimer_now_usec());
+//	mutex_lock(&lock);
 	(void) arg;
-  	thread_t *t = thread_get_active();
-	puts("terza stringa");
-   	printf("PID: %d, priority: %d \n", (int)t->pid, (int)t->priority);
+  	thread_t *t2 = thread_get_active();
+	puts("++ terza stringa ++");
+   	printf("PID: %d, priority: %d time: %d \n", (int)t2->pid, (int)t2->priority, t2->s_time);
+//	mutex_unlock(&lock);
     	return NULL;
 }
 
@@ -114,19 +101,19 @@ int main(void) {
   	ret.ticks32 = _xtimer_now();
   	printf("ret: %d", (int)ret.ticks32);
   	*/
-  	
+// 	mutex_init(&lock);
+//	mutex_lock(&lock);
   	
 	
-	p1 = thread_create(t1_stack, sizeof(t1_stack), 1,
-                       THREAD_CREATE_WOUT_YIELD | THREAD_CREATE_STACKTEST,
-                       thread1, NULL, "nr1");
-	p2 = thread_create(t2_stack, sizeof(t2_stack), 1,
-                       THREAD_CREATE_WOUT_YIELD | THREAD_CREATE_STACKTEST,
-                       thread2, NULL, "nr2");
-	p3 = thread_create(t2_stack, sizeof(t3_stack), 1,
-                       THREAD_CREATE_WOUT_YIELD | THREAD_CREATE_STACKTEST,
-                       thread2, NULL, "nr3");
+	p1 = thread_create(t1_stack, sizeof(t1_stack), 8, 0, thread1, NULL, "nr1", 3000);
+	p2 = thread_create(t2_stack, sizeof(t2_stack), 8, 0, thread2, NULL, "nr2", 1000);
+	p3 = thread_create(t3_stack, sizeof(t3_stack), 8, 0, thread3, NULL, "nr3", 500);
+
+	
                        
+//	mutex_unlock(&lock); 
+
+//	mutex_lock(&lock);
                        /*
 	for (unsigned i = 0; i < THREAD_NUMOF; i++) {
 	printf("Sto creando il processo!");

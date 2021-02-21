@@ -33,9 +33,6 @@ int main(void)
 */
 #include <stdio.h>
 #include <inttypes.h>
-
-
-
 #include "thread.h"
 #include "msg.h"
 #include "xtimer.h"
@@ -62,7 +59,7 @@ void *thread1(void *arg)
 	(void) arg;
 	thread_t *t = thread_get_active();
    	puts("++ Prima stringa ++");
-   	printf("PID: %d, priority: %d \n", (int)t->pid, (int)t->priority);
+   	printf("PID: %d, priority: %d time: %d \n", (int)t->pid, (int)t->priority, (int)t->s_time);
 //	mutex_unlock(&lock);
    	return NULL;
 }
@@ -74,7 +71,7 @@ void *thread2(void *arg)
 	(void) arg;
   	thread_t *t1 = thread_get_active();
 	puts("++ seconda stringa ++");
-   	printf("PID: %d, priority: %d \n", (int)t1->pid, (int)t1->priority);
+   	printf("PID: %d, priority: %d time: %d \n", (int)t1->pid, (int)t1->priority, (int)t1->s_time);
 //	mutex_unlock(&lock);
     return NULL;
 }
@@ -86,25 +83,38 @@ void *thread3(void *arg)
 	(void) arg;
   	thread_t *t2 = thread_get_active();
 	puts("++ terza stringa ++");
-   	printf("PID: %d, priority: %d time: %d \n", (int)t2->pid, (int)t2->priority, t2->s_time);
+   	printf("PID: %d, priority: %d time: %d \n", (int)t2->pid, (int)t2->priority, (int)t2->s_time);
 //	mutex_unlock(&lock);
     	return NULL;
 }
 
+void Saluto(int var)
+{
+	printf("Sono bello %d" ,var);
+	
+}
 
 int main(void) {
-
-  	//xtimer_init();
   	
   	/*
   	xtimer_ticks32_t ret;
   	ret.ticks32 = _xtimer_now();
   	printf("ret: %d", (int)ret.ticks32);
   	*/
-// 	mutex_init(&lock);
-//	mutex_lock(&lock);
-  	
+  	uint32_t Time = 500;
+	xtimer_t Run;
+	Run.next = NULL;         /**< reference to next timer in timer lists */
+    Run.offset = 0;             /**< lower 32bit offset time */
+    Run.long_offset = 0;        /**< upper 32bit offset time */
+    Run.start_time = 0;         /**< lower 32bit absolute start time */
+    Run.long_start_time = 0;    /**< upper 32bit absolute start time */
+    Run.callback = Saluto;
+	Run.arg = (int*); 
 	
+	
+	// printf("Time: %d  \n" , xtimer_usec_from_ticks(xtimer_ticks(Time)));
+	xtimer_set(&Run,Time);
+
 	p1 = thread_create(t1_stack, sizeof(t1_stack), 8, 0, thread1, NULL, "nr1", 3000);
 	p2 = thread_create(t2_stack, sizeof(t2_stack), 8, 0, thread2, NULL, "nr2", 1000);
 	p3 = thread_create(t3_stack, sizeof(t3_stack), 8, 0, thread3, NULL, "nr3", 500);

@@ -101,6 +101,7 @@ int main(void) {
   	ret.ticks32 = _xtimer_now();
   	printf("ret: %d", (int)ret.ticks32);
   	*/
+  	uint32_t now = xtimer_now_usec();
   	uint32_t Time = 500;
 	xtimer_t Run;
 	Run.next = NULL;         /**< reference to next timer in timer lists */
@@ -108,8 +109,8 @@ int main(void) {
     Run.long_offset = 0;        /**< upper 32bit offset time */
     Run.start_time = 0;         /**< lower 32bit absolute start time */
     Run.long_start_time = 0;    /**< upper 32bit absolute start time */
-    Run.callback = Saluto;
-	Run.arg = (int*); 
+/*    Run.callback = Saluto;
+	Run.arg = (int*); */
 	
 	
 	// printf("Time: %d  \n" , xtimer_usec_from_ticks(xtimer_ticks(Time)));
@@ -119,6 +120,7 @@ int main(void) {
 	p2 = thread_create(t2_stack, sizeof(t2_stack), 8, 0, thread2, NULL, "nr2", 1000);
 	p3 = thread_create(t3_stack, sizeof(t3_stack), 8, 0, thread3, NULL, "nr3", 500);
 
+	printf("BEFORE: %d, AFTER: %d", (int)now, (int)xtimer_now_usec());
 	
                        
 //	mutex_unlock(&lock); 

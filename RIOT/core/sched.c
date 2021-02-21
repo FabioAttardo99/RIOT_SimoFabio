@@ -164,7 +164,7 @@ thread_t *__attribute__((used)) sched_run(void)
 
         do {
             DEBUG("Non ho trovato altri thread!");
-            //sched_arch_idle();
+            sched_arch_idle();
         } while (!runqueue_bitcache);
     }
 
@@ -174,8 +174,7 @@ thread_t *__attribute__((used)) sched_run(void)
     thread_t *next_thread = container_of(sched_runqueues[nextrq].next->next,
                                          thread_t, rq_entry);
 
-    DEBUG(
-        "sched_run: active thread: %" PRIkernel_pid ", next thread: %" PRIkernel_pid "\n",
+    DEBUG( "sched_run: active thread: %" PRIkernel_pid ", next thread: %" PRIkernel_pid "\n",
         (kernel_pid_t)((active_thread == NULL)
                        ? KERNEL_PID_UNDEF
                        : active_thread->pid),

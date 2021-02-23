@@ -37,6 +37,7 @@ int main(void)
 #include "msg.h"
 #include "xtimer.h"
 #include "timex.h"
+ #include "/home/fabio/Scrivania/RIOT_FabioSimo/RIOT/drivers/include/periph/timer.h"
 #include "mutex.h"
 
 #define THREAD_NUMOF (7U)
@@ -60,6 +61,15 @@ void *thread1(void *arg)
 	thread_t *t = thread_get_active();
    	puts("++ Prima stringa ++");
    	printf("PID: %d, priority: %d time: %d \n", (int)t->pid, (int)t->priority, (int)t->s_time);
+//	int i = 0;
+//	while (1) {
+//	printf("Thread 1 chiamato %d volte\n", i);
+//	i++;
+
+//	}
+//	xtimer_usleep(500);
+//	sched_run();
+
 //	mutex_unlock(&lock);
    	return NULL;
 }
@@ -70,8 +80,13 @@ void *thread2(void *arg)
 //	mutex_lock(&lock);
 	(void) arg;
   	thread_t *t1 = thread_get_active();
+//  xtimer_t time = null;
 	puts("++ seconda stringa ++");
    	printf("PID: %d, priority: %d time: %d \n", (int)t1->pid, (int)t1->priority, (int)t1->s_time);
+//	printf("Thread 2 chiamato %d volte", i);
+//	xtimer_usleep(500);
+//  xtimer_set_wakeup 	(*time,20,ti->pid);
+//	sched_run();
 //	mutex_unlock(&lock);
     return NULL;
 }
@@ -84,43 +99,57 @@ void *thread3(void *arg)
   	thread_t *t2 = thread_get_active();
 	puts("++ terza stringa ++");
    	printf("PID: %d, priority: %d time: %d \n", (int)t2->pid, (int)t2->priority, (int)t2->s_time);
+//	printf("Thread 3 chiamato %d volte", i);
+//	xtimer_usleep(500);
+//	sched_run();
 //	mutex_unlock(&lock);
-    	return NULL;
+    return NULL;
 }
 
-void Saluto(int var)
-{
-	printf("Sono bello %d" ,var);
-	
+void Ciao(void) {
+	xtimer_t Run = {
+		NULL,
+		0,
+		0,
+		0,
+		0,
+		(xtimer_callback_t) Ciao,
+		NULL
+	};  
+
+	uint32_t Time = 500;
+	sched_run();
+	xtimer_set(&Run, Time);
 }
 
 int main(void) {
   	
-  	/*
-  	xtimer_ticks32_t ret;
-  	ret.ticks32 = _xtimer_now();
-  	printf("ret: %d", (int)ret.ticks32);
-  	*/
-  	uint32_t now = xtimer_now_usec();
-  	uint32_t Time = 500;
-	xtimer_t Run;
-	Run.next = NULL;         /**< reference to next timer in timer lists */
-    Run.offset = 0;             /**< lower 32bit offset time */
-    Run.long_offset = 0;        /**< upper 32bit offset time */
-    Run.start_time = 0;         /**< lower 32bit absolute start time */
-    Run.long_start_time = 0;    /**< upper 32bit absolute start time */
-/*    Run.callback = Saluto;
-	Run.arg = (int*); */
+  
+  /*	uint32_t now = xtimer_now_usec(); 
+  	uint32_t Time = 50;
+
+	xtimer_t Run = {
+		NULL,
+		0,
+		0,
+		0,
+		0,
+		(xtimer_callback_t) Ciao,
+		NULL
+	};  */
 	
+//	printf("Time: %d  now: %d \n" , xtimer_usec_from_ticks(xtimer_ticks(Time)), now);
 	
-	// printf("Time: %d  \n" , xtimer_usec_from_ticks(xtimer_ticks(Time)));
-	xtimer_set(&Run,Time);
 
 	p1 = thread_create(t1_stack, sizeof(t1_stack), 8, 0, thread1, NULL, "nr1", 3000);
 	p2 = thread_create(t2_stack, sizeof(t2_stack), 8, 0, thread2, NULL, "nr2", 1000);
 	p3 = thread_create(t3_stack, sizeof(t3_stack), 8, 0, thread3, NULL, "nr3", 500);
+	
+	Ciao();
 
-	printf("BEFORE: %d, AFTER: %d", (int)now, (int)xtimer_now_usec());
+//  int result = timer_read(time);
+//  printf("TEMPO: %d", result);
+//	printf("BEFORE: %d, AFTER: %d", (int)now, (int)xtimer_now_usec());
 	
                        
 //	mutex_unlock(&lock); 
@@ -131,5 +160,23 @@ int main(void) {
 	printf("Sto creando il processo!");
         thread_create(stacks[i], sizeof(stacks[i]), prios[i], 0, prova, NULL, "t");
         printf("Ho creato il processo!");*/
+
+
+			/*
+  	xtimer_ticks32_t ret;
+  	ret.ticks32 = _xtimer_now();
+  	printf("ret: %d", (int)ret.ticks32);
+  	*/
+/*
+
+	Run.next = NULL; //< reference to next timer in timer lists 
+	Run.offset = 0; //< lower 32bit offset time 
+	Run.long_offset = 0; //< upper 32bit offset time 
+	Run.start_time = 0; //< lower 32bit absolute start time 
+	Run.long_start_time = 0; //< upper 32bit absolute start time 
+	Run.callback = Saluto;
+	Run.arg = (int*); 
+	
+	*/
     
 }

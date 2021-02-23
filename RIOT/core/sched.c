@@ -27,6 +27,7 @@
 #include "irq.h"
 #include "thread.h"
 #include "log.h"
+#include "xtimer.h"
 
 #ifdef MODULE_MPU_STACK_GUARD
 #include "mpu.h"
@@ -146,13 +147,32 @@ static void _unschedule(thread_t *active_thread)
     }
 #endif
 }
+/*
+typedef void (*xtimer_callback_t)(void*);
+xtimer_t Run = {
+		NULL,
+		0,
+		0,
+		0,
+		0,
+		(xtimer_callback_t) sched_run,
+		NULL
+	};
+uint32_t Time = 500;
+*/
 
 thread_t *__attribute__((used)) sched_run(void)
 {
+    
+    //xtimer_set(&Run,Time);
+
     for (int i = 0; i < SCHED_PRIO_LEVELS; i++) {
         if ((int)clist_count(&sched_runqueues[i]) != 0)
         DEBUG(" -- SCHED_RUN -- CODA %d -> %d \n", i, (int)clist_count(&sched_runqueues[i]));
     }
+
+    DEBUG("Runqueue: %d, Funzione: %d \n", runqueue_bitcache,_get_prio_queue_from_runqueue());
+
     thread_t *active_thread = thread_get_active();
     thread_t *previous_thread = active_thread;
 

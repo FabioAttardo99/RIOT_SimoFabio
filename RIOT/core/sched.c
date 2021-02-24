@@ -162,16 +162,35 @@ uint32_t Time = 500;
 */
 
 thread_t *__attribute__((used)) sched_run(void)
-{
-    
+{   
     //xtimer_set(&Run,Time);
-
+/*
     for (int i = 0; i < SCHED_PRIO_LEVELS; i++) {
         if ((int)clist_count(&sched_runqueues[i]) != 0)
         DEBUG(" -- SCHED_RUN -- CODA %d -> %d \n", i, (int)clist_count(&sched_runqueues[i]));
     }
+    */
+    for (int i = 0; i < SCHED_PRIO_LEVELS; i++) 
+    {
 
+	DEBUG(" -- SCHED_RUN -- CODA %d -> %d \n", i, (int)clist_count(&sched_runqueues[i]));
+	if((int)clist_count(&sched_runqueues[i]) != 0)
+	{
+		//clist_node_t *list = clist_lpeek(&sched_runqueues[i]);
+		
+		for(int j = 0; j < (int)clist_count(&sched_runqueues[i]);++j)
+		{
+			//clist_node_t *node = list->next;
+			 thread_t *t = container_of(sched_runqueues[i].next->next,
+                                         thread_t, rq_entry);
+			DEBUG(" -- List --Pos: %d -> %d name: %s\n", j, t->pid,t->name);
+			clist_lpoprpush(&sched_runqueues[i]); 
+		}
+	}
+    }	
     DEBUG("Runqueue: %d, Funzione: %d \n", runqueue_bitcache,_get_prio_queue_from_runqueue());
+
+
 
     thread_t *active_thread = thread_get_active();
     thread_t *previous_thread = active_thread;
@@ -295,7 +314,7 @@ void sched_switch(uint16_t other_prio)
           active_thread->pid, current_prio, on_runqueue,
           other_prio);
 
-    if (!on_runqueue || (current_prio > other_prio)) {
+    if (on_runqueue || (current_prio > other_prio)) {
         if (irq_is_in()) {
             DEBUG("sched_switch: setting sched_context_switch_request.\n");
             sched_context_switch_request = 1;

@@ -135,6 +135,7 @@ int thread_wakeup(kernel_pid_t pid)
     return (int)STATUS_NOT_FOUND;
 }
 
+
 void thread_yield(void)
 {
     unsigned old_state = irq_disable();
@@ -284,7 +285,7 @@ kernel_pid_t thread_create(char *stack, int stacksize, uint8_t priority,
     thread->name = name;
 #endif
 
-    thread->priority = priority;
+    thread->priority = 1;// versione originale     thread->priority = priority;
     thread->status = STATUS_STOPPED;
 
     thread->rq_entry.next = NULL;

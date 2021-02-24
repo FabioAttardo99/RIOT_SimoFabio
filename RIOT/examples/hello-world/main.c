@@ -37,7 +37,7 @@ int main(void)
 #include "msg.h"
 #include "xtimer.h"
 #include "timex.h"
- #include "/home/fabio/Scrivania/RIOT_FabioSimo/RIOT/drivers/include/periph/timer.h"
+//#include "/home/fabio/Scrivania/RIOT_FabioSimo/RIOT/drivers/include/periph/timer.h"
 #include "mutex.h"
 
 #define THREAD_NUMOF (7U)
@@ -61,12 +61,14 @@ void *thread1(void *arg)
 	thread_t *t = thread_get_active();
    	puts("++ Prima stringa ++");
    	printf("PID: %d, priority: %d time: %d \n", (int)t->pid, (int)t->priority, (int)t->s_time);
-//	int i = 0;
-//	while (1) {
-//	printf("Thread 1 chiamato %d volte\n", i);
-//	i++;
-
-//	}
+	/*int i = 0;
+	while (1) 
+	{
+		printf("Thread 1 chiamato %d volte  PID: %d \n", i,(int)t->pid);
+		i++;
+	
+	}*/
+		sched_switch(t->priority);
 //	xtimer_usleep(500);
 //	sched_run();
 
@@ -83,11 +85,21 @@ void *thread2(void *arg)
 //  xtimer_t time = null;
 	puts("++ seconda stringa ++");
    	printf("PID: %d, priority: %d time: %d \n", (int)t1->pid, (int)t1->priority, (int)t1->s_time);
-//	printf("Thread 2 chiamato %d volte", i);
-//	xtimer_usleep(500);
-//  xtimer_set_wakeup 	(*time,20,ti->pid);
-//	sched_run();
-//	mutex_unlock(&lock);
+	/*int i = 0;
+	while (1) 
+	{
+		
+		printf("Thread 2 chiamato %d volte\n", i);
+		i++;
+		if(i == 5)
+			{
+				i = 0;
+				thread_sleep();
+				thread_wakeup(5);
+			}	
+			
+	}*/
+	sched_switch(t1->priority);
     return NULL;
 }
 
@@ -99,10 +111,22 @@ void *thread3(void *arg)
   	thread_t *t2 = thread_get_active();
 	puts("++ terza stringa ++");
    	printf("PID: %d, priority: %d time: %d \n", (int)t2->pid, (int)t2->priority, (int)t2->s_time);
-//	printf("Thread 3 chiamato %d volte", i);
-//	xtimer_usleep(500);
-//	sched_run();
-//	mutex_unlock(&lock);
+
+	/*int i = 0;
+	while (1) 
+	{
+		printf("Thread 3 chiamato %d volte\n", i);
+		i++;
+		if(i == 5)
+			{
+				i = 0;
+				thread_wakeup(3);
+				thread_sleep();
+
+			}	
+
+	}*/
+		sched_switch(t2->priority);
     return NULL;
 }
 
@@ -145,8 +169,15 @@ int main(void) {
 	p2 = thread_create(t2_stack, sizeof(t2_stack), 8, 0, thread2, NULL, "nr2", 1000);
 	p3 = thread_create(t3_stack, sizeof(t3_stack), 8, 0, thread3, NULL, "nr3", 500);
 	
-	Ciao();
+	
+/*
+	for (kernel_pid_t i = KERNEL_PID_FIRST; i <= KERNEL_PID_LAST; ++i) 
+		{
 
+			printf("Thread %d Pid: %d Nome: %s Priorità: %d ServiceTime: %d \n"
+			,i,sched_threads[i]->pid,sched_threads[i]->name,sched_threads[i]->priority, sched_threads[i]->s_time);
+	    	}*/
+	    	
 //  int result = timer_read(time);
 //  printf("TEMPO: %d", result);
 //	printf("BEFORE: %d, AFTER: %d", (int)now, (int)xtimer_now_usec());

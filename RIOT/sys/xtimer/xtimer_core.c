@@ -270,8 +270,9 @@ static inline void _update_long_timers(uint64_t *now)
 static inline void _update_short_timers(uint64_t *now)
 {
     xtimer_t *timer = timer_list_head;
-
+    printf("+++ LONG_OFFSET -> %d\n", (int)timer->long_offset);
     while (timer) {
+        printf("+++ LONG_OFFSET -> %d\n", (int)timer->long_offset);
         assert(!timer->long_offset);
         uint32_t elapsed = (uint32_t)*now - timer->start_time;
         if (timer->offset < elapsed || timer->offset - elapsed < XTIMER_ISR_BACKOFF) {

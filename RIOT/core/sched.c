@@ -167,18 +167,7 @@ void callSchedRun(void) {
 
 thread_t *__attribute__((used)) sched_run(void)
 {   
-    typedef void (*xtimer_callback_t)(void*);
-    xtimer_t Run = {
-		NULL,
-		0,
-		0,
-		0,
-		0,
-		(xtimer_callback_t) callSchedRun,
-		NULL
-	};
-    uint32_t Time = 500;
-    xtimer_set(&Run,Time);
+    xtimer_init();
 /*
     for (int i = 0; i < SCHED_PRIO_LEVELS; i++) {
         if ((int)clist_count(&sched_runqueues[i]) != 0)
@@ -227,6 +216,23 @@ thread_t *__attribute__((used)) sched_run(void)
     unsigned nextrq = _get_prio_queue_from_runqueue();
     thread_t *next_thread = container_of(sched_runqueues[nextrq].next->next,
                                          thread_t, rq_entry);
+
+    if ((int)next_thread->pid != 2) {
+        DEBUG("*** TIMER SETTED SUCCESSFULLY *** \n");
+         typedef void (*xtimer_callback_t)(void*);
+        xtimer_t Run = {
+		    NULL,
+		    0,
+		    0,
+		    0,
+		    0,
+		    (xtimer_callback_t) callSchedRun,
+		    NULL
+	        };
+    
+    uint32_t Time = 250;
+    xtimer_set(&Run,Time);
+    }                                     
 
     DEBUG( "sched_run: active thread: %" PRIkernel_pid ", next thread: %" PRIkernel_pid "\n",
         (kernel_pid_t)((active_thread == NULL)

@@ -55,24 +55,18 @@ kernel_pid_t p_main, p1, p2, p3;
 
 void *thread1(void *arg)
 {
-//	printf("TIME: %d", xtimer_now_usec());
-//	mutex_lock(&lock);
 	(void) arg;
 	thread_t *t = thread_get_active();
    	puts("++ Prima stringa ++");
    	printf("PID: %d, priority: %d time: %d \n", (int)t->pid, (int)t->priority, (int)t->s_time);
-	/*int i = 0;
+	 int i = 0;
 	while (1) 
 	{
 		printf("Thread 1 chiamato %d volte  PID: %d \n", i,(int)t->pid);
 		i++;
-	
-	}*/
-		sched_switch(t->priority);
-//	xtimer_usleep(500);
+	}
+		
 //	sched_run();
-
-//	mutex_unlock(&lock);
    	return NULL;
 }
 
@@ -85,21 +79,15 @@ void *thread2(void *arg)
 //  xtimer_t time = null;
 	puts("++ seconda stringa ++");
    	printf("PID: %d, priority: %d time: %d \n", (int)t1->pid, (int)t1->priority, (int)t1->s_time);
-	/*int i = 0;
+	int i = 0;
 	while (1) 
 	{
 		
 		printf("Thread 2 chiamato %d volte\n", i);
-		i++;
-		if(i == 5)
-			{
-				i = 0;
-				thread_sleep();
-				thread_wakeup(5);
-			}	
+		i++;	
 			
-	}*/
-	sched_switch(t1->priority);
+	}
+	//sched_switch(t1->priority);
     return NULL;
 }
 
@@ -112,21 +100,13 @@ void *thread3(void *arg)
 	puts("++ terza stringa ++");
    	printf("PID: %d, priority: %d time: %d \n", (int)t2->pid, (int)t2->priority, (int)t2->s_time);
 
-	/*int i = 0;
+	int i = 0;
 	while (1) 
 	{
 		printf("Thread 3 chiamato %d volte\n", i);
 		i++;
-		if(i == 5)
-			{
-				i = 0;
-				thread_wakeup(3);
-				thread_sleep();
-
-			}	
-
-	}*/
-		sched_switch(t2->priority);
+	}
+	//sched_switch(t2->priority);
     return NULL;
 }
 

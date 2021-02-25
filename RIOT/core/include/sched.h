@@ -142,7 +142,7 @@ typedef enum {
  *              was changed,
  * @returns     NULL if the active thread was not changed.
  */
-thread_t *sched_run(void);
+void *sched_run(void);
 
 
 /**

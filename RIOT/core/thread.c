@@ -285,7 +285,8 @@ kernel_pid_t thread_create(char *stack, int stacksize, uint8_t priority,
     thread->name = name;
 #endif
 
-    thread->priority = 1;// versione originale     thread->priority = priority;
+    if ((int)pid == 1) thread->priority = 15;// versione originale     thread->priority = priority;
+    else thread->priority = 1;
     thread->status = STATUS_STOPPED;
 
     thread->rq_entry.next = NULL;

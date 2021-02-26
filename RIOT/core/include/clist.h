@@ -137,7 +137,6 @@ static inline void clist_rpush(clist_node_t *list, clist_node_t *new_node)
  */
 static inline void clist_lpush(clist_node_t *list, clist_node_t *new_node)
 {
-    printf("*** Called LPUSH *** \n");
     if (list->next) {
         new_node->next = list->next->next;
         list->next->next = new_node;
@@ -158,8 +157,6 @@ static inline void clist_lpush(clist_node_t *list, clist_node_t *new_node)
  */
 static inline clist_node_t *clist_lpop(clist_node_t *list)
 {
-    
-printf("*** Called LPOP *** \n");
     if (list->next) {
         clist_node_t *first = list->next->next;
         if (list->next == first) {
@@ -190,7 +187,6 @@ printf("*** Called LPOP *** \n");
  */
 static inline void clist_lpoprpush(clist_node_t *list)
 {
-    printf("*** Called LPOPRPUSH *** \n");
     if (list->next) {
         list->next = list->next->next;
     }
@@ -206,7 +202,6 @@ static inline void clist_lpoprpush(clist_node_t *list)
  */
 static inline clist_node_t *clist_lpeek(const clist_node_t *list)
 {
-    printf("*** Called LPEEK *** \n");
     if (list->next) {
         return list->next->next;
     }
@@ -223,7 +218,6 @@ static inline clist_node_t *clist_lpeek(const clist_node_t *list)
  */
 static inline clist_node_t *clist_rpeek(const clist_node_t *list)
 {
-    printf("*** Called RPEEK *** \n");
     return list->next;
 }
 
@@ -237,7 +231,6 @@ static inline clist_node_t *clist_rpeek(const clist_node_t *list)
  */
 static inline clist_node_t *clist_rpop(clist_node_t *list)
 {
-    printf("*** Called RPOP *** \n");
     if (list->next) {
         list_node_t *last = list->next;
         while (list->next->next != last) {

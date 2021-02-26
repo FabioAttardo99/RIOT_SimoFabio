@@ -59,12 +59,12 @@ void *thread1(void *arg)
 	thread_t *t = thread_get_active();
    	puts("++ Prima stringa ++");
    	printf("PID: %d, priority: %d time: %d \n", (int)t->pid, (int)t->priority, (int)t->s_time);
-//	 int i = 0;
-//	while (1) 
-//	{
-//		printf("Thread 1 chiamato %d volte  PID: %d \n", i,(int)t->pid);
-//		i++;
-//	}
+    int i = 0;
+	while (1) 
+	{
+		//printf("Thread 1 chiamato %d volte S_Time: %d \n", i, t->s_time);
+		i++;
+	}
 		
 //	sched_run();
    	return NULL;
@@ -83,7 +83,7 @@ void *thread2(void *arg)
 	while (1) 
 	{
 		
-//		printf("Thread 2 chiamato %d volte\n", i);
+		//printf("Thread 2 chiamato %d volte S_Time %d \n", i,t1->s_time);
 		i++;	
 			
 	}
@@ -103,7 +103,7 @@ void *thread3(void *arg)
 	int i = 0;
 	while (1) 
 	{
-//		printf("Thread 3 chiamato %d volte\n", i);
+		//printf("Thread 3 chiamato %d volte S_Time %d \n", i,t2->s_time);
 		i++;
 	}
 	//sched_switch(t2->priority);
@@ -146,8 +146,8 @@ int main(void) {
 	
 
 	p1 = thread_create(t1_stack, sizeof(t1_stack), 8, 0, thread1, NULL, "nr1", 3000);
-	p2 = thread_create(t2_stack, sizeof(t2_stack), 8, 0, thread2, NULL, "nr2", 1000);
-	p3 = thread_create(t3_stack, sizeof(t3_stack), 8, 0, thread3, NULL, "nr3", 500);
+	p2 = thread_create(t2_stack, sizeof(t2_stack), 8, 0, thread2, NULL, "nr2", 3000);
+	p3 = thread_create(t3_stack, sizeof(t3_stack), 8, 0, thread3, NULL, "nr3", 3000);
 	
 	
 /*

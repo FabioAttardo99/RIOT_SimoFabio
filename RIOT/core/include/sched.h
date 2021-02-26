@@ -168,6 +168,8 @@ void sched_set_status(thread_t *process, thread_status_t status);
  */
 void sched_switch(uint16_t other_prio);
 
+void checkTask(void);
+
 /**
  * @brief   Call context switching at thread exit
  */

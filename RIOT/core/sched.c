@@ -168,6 +168,7 @@ void callSchedRun(void) {
 void *__attribute__((used)) sched_run(void)
 {   
     xtimer_init();
+    
 /*
     for (int i = 0; i < SCHED_PRIO_LEVELS; i++) {
         if ((int)clist_count(&sched_runqueues[i]) != 0)
@@ -198,6 +199,22 @@ void *__attribute__((used)) sched_run(void)
     clist_lpoprpush(&sched_runqueues[1]); 
     thread_t *active_thread = thread_get_active();
     thread_t *previous_thread = active_thread;
+    
+//  Se pid main o idle, no decremento servicetime
+    if (active_thread != NULL) {
+        if(!((int)active_thread -> pid == 1 || (int)active_thread -> pid == 2)) {
+            DEBUG("\n S_TIME BEFORE = %d \n", active_thread -> s_time);
+            active_thread -> s_time -= 500;
+            DEBUG("\n S_TIME AFTER = %d \n", active_thread -> s_time);
+
+        if (active_thread -> s_time == 0) {
+            DEBUG("sched_run: SERVICE TIME ENDED! Exiting from current task! \n");
+            sched_task_exit();
+        }
+    }
+}
+
+
 
     if (!IS_USED(MODULE_CORE_IDLE_THREAD) && !runqueue_bitcache) {
         if (active_thread) {
@@ -275,20 +292,32 @@ void *__attribute__((used)) sched_run(void)
         typedef void (*xtimer_callback_t)(void*);  
 
         xtimer_t Run = {
-		    NULL,
-		    0,
-		    0,
-		    0,
-		    0,
-		    (xtimer_callback_t) callSchedRun,
-		    NULL
-	        };
+	    	NULL,
+	    	0,
+	    	0,
+	    	0,
+	    	0,
+	    	(xtimer_callback_t) callSchedRun,
+	    	NULL
+	    };
 
-          
-    
     uint32_t Time = 1000000;
     xtimer_set(&Run,Time);
     }                
+/*
+bool Check = true;
+uint32_t Time = xtimer_now_usec(); 
+while(Check)
+{
+    Time = xtimer_now_usec(); 
+    if(Time >= 1000000)
+    {
+        printf("TIME: %d \n" , Time);
+        Check = false;
+    }
+}
+*/
+
 
     return NULL;
  //   return next_thread;

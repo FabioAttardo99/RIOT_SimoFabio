@@ -60,11 +60,11 @@ void *thread1(void *arg)
    	puts("++ Prima stringa ++");
    	printf("PID: %d, priority: %d time: %d \n", (int)t->pid, (int)t->priority, (int)t->s_time);
 //	 int i = 0;
-	while (1) 
-	{
+//	while (1) 
+//	{
 //		printf("Thread 1 chiamato %d volte  PID: %d \n", i,(int)t->pid);
 //		i++;
-	}
+//	}
 		
 //	sched_run();
    	return NULL;
@@ -79,12 +79,12 @@ void *thread2(void *arg)
 //  xtimer_t time = null;
 	puts("++ seconda stringa ++");
    	printf("PID: %d, priority: %d time: %d \n", (int)t1->pid, (int)t1->priority, (int)t1->s_time);
-//	int i = 0;
+	int i = 0;
 	while (1) 
 	{
 		
 //		printf("Thread 2 chiamato %d volte\n", i);
-//		i++;	
+		i++;	
 			
 	}
 	//sched_switch(t1->priority);
@@ -100,11 +100,11 @@ void *thread3(void *arg)
 	puts("++ terza stringa ++");
    	printf("PID: %d, priority: %d time: %d \n", (int)t2->pid, (int)t2->priority, (int)t2->s_time);
 
-//	int i = 0;
+	int i = 0;
 	while (1) 
 	{
 //		printf("Thread 3 chiamato %d volte\n", i);
-//		i++;
+		i++;
 	}
 	//sched_switch(t2->priority);
     return NULL;

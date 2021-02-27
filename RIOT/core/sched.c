@@ -168,6 +168,11 @@ void *__attribute__((used)) sched_run(void)
 
     sched_context_switch_request = 0;
     unsigned nextrq = 0;
+
+    // Per scegliere la nuova priorit del thread ci si basa sul numero di thread che devono essere
+    // ancora completati:
+    // -> Se c'è almeno un thread, la priorità è 1.
+    // -> Se non ci sono thread, la priorità è 15 (in modo da poter richiamare l'idle thread)
     if (clist_count(&sched_runqueues[1]) == 0) nextrq = 15;
     else nextrq = _get_prio_queue_from_runqueue();
     thread_t *next_thread = container_of(sched_runqueues[nextrq].next->next,
@@ -233,7 +238,9 @@ if (active_thread != NULL) {
 #endif
         DEBUG("sched_run: done, changed sched_active_thread.\n");
     }
-               
+
+    // Se è scaduta la service time del thread lo si toglie dalla lista dei thread eseguiti e,
+    // di conseguenza, viene terminato           
     if (active_thread != NULL && !((int)active_thread->pid == 1 || (int)active_thread->pid == 2)) {
           if (next_thread -> s_time == 0) {
               DEBUG("sched_run: SERVICE TIME FIRED! Exiting from current task! \n");
@@ -252,10 +259,16 @@ if (active_thread != NULL) {
                 thread_t *t = container_of(sched_runqueues[i].next->next,
                                             thread_t, rq_entry);
                 DEBUG(" -- List --Pos: %d -> %d, name: %s, Service_Time: %d \n", j, t->pid,t->name, t->s_time);
+                
+                // Il primo thread della lista è messo in coda
                 clist_lpoprpush(&sched_runqueues[1]);
             }
         }
     }	
+
+    // A meno che il prossimo thread non sia l'idle, si costruisce un timer impostato a 0,5 secondi
+    // Ogni volta che scade questo intervallo di tempo viene chiamata nuovamente la funzione
+    // sched_run() che manda in esecuzione un altro thread
     if ((int)next_thread->pid != 1) {
         DEBUG("*** TIMER SUCCESSFULLY SET *** \n");
         xtimer_set(&Run, 500000LU); 

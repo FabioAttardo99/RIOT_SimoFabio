@@ -33,7 +33,7 @@
 #include "mpu.h"
 #endif
 
-#define ENABLE_DEBUG (1)
+#define ENABLE_DEBUG (0)
 #include "debug.h"
 
 #if ENABLE_DEBUG
@@ -118,13 +118,6 @@ static inline unsigned _get_prio_queue_from_runqueue(void)
 #endif
 }
 
-/*
-static int _print_node(clist_node_t *node)
-    {
-         printf("0x%08x ", (unsigned)node);
-         return 0;
-    }
-*/
 
 static void _unschedule(thread_t *active_thread)
 {
@@ -148,20 +141,6 @@ static void _unschedule(thread_t *active_thread)
 #endif
 }
 
-/*
- * typedef void (*xtimer_callback_t)(void*);
- * xtimer_t Run = {
- *		NULL,
- *		0,
- *		0,
- *		0,
- *		0,
- *		(xtimer_callback_t) sched_run,
- *		NULL
- *	};
- * uint32_t Time = 500;
- */
-
 static void callSchedRun(void *arg) {
     (void) arg;
     sched_run();
@@ -171,15 +150,10 @@ static xtimer_t Run = { .callback = callSchedRun};
 
 void *__attribute__((used)) sched_run(void)
 {   
-    
-
-   
     DEBUG("Runqueue: %d, Funzione: %d \n", runqueue_bitcache,_get_prio_queue_from_runqueue());
     
     thread_t *active_thread = thread_get_active();
     thread_t *previous_thread = active_thread;
-
-
 
     if (!IS_USED(MODULE_CORE_IDLE_THREAD) && !runqueue_bitcache) {
         if (active_thread) {
@@ -188,39 +162,34 @@ void *__attribute__((used)) sched_run(void)
         }
 
         do {
-            DEBUG("Non ho trovato altri thread!");
             sched_arch_idle();
         } while (!runqueue_bitcache);
     }
 
     sched_context_switch_request = 0;
-
-    unsigned nextrq = _get_prio_queue_from_runqueue();
+    unsigned nextrq = 0;
+    if (clist_count(&sched_runqueues[1]) == 0) nextrq = 15;
+    else nextrq = _get_prio_queue_from_runqueue();
     thread_t *next_thread = container_of(sched_runqueues[nextrq].next->next,
                                          thread_t, rq_entry);      
 
+    DEBUG("NEXTRQ: %d \n", (int)nextrq);
     DEBUG( "sched_run: active thread: %" PRIkernel_pid ", next thread: %" PRIkernel_pid "\n",
         (kernel_pid_t)((active_thread == NULL)
                        ? KERNEL_PID_UNDEF
                        : active_thread->pid),
         next_thread->pid);
 
-//  Se pid main o idle, no decremento servicetime
-/*    if (active_thread != NULL) {
-        if(!((int)active_thread -> pid == 1 || (int)active_thread -> pid == 2)) {
+if (active_thread != NULL) {
+    if(!((int)active_thread -> pid == 1 || (int)active_thread -> pid == 2)) 
+    {
             DEBUG("\n Pid: %d, S_TIME: %d \n",(int)active_thread->pid, active_thread -> s_time);
             if (active_thread -> s_time >= 500) 
+            {
                     active_thread -> s_time -= 500;
-            else {
-                active_thread -> s_time = 0;
-                DEBUG("sched_run: TEMPO DI SERVIZIO TERMINATO! Chiudo il thread %d\n", (int)active_thread);
-                sched_task_exit();
-                return NULL;
             }
-            DEBUG("\n Pid: %d, S_TIME_AFTER: %d \n",(int)active_thread->pid, active_thread -> s_time);
     }
 }
-*/
     next_thread->status = STATUS_RUNNING;
 
     if (previous_thread == next_thread) {
@@ -267,11 +236,11 @@ void *__attribute__((used)) sched_run(void)
                
     if (active_thread != NULL && !((int)active_thread->pid == 1 || (int)active_thread->pid == 2)) {
           if (next_thread -> s_time == 0) {
-              DEBUG("sched_run: SERVICE TIME ENDED! Exiting from current task! \n");
-              sched_task_exit();
-              return NULL;
+              DEBUG("sched_run: SERVICE TIME FIRED! Exiting from current task! \n");
+              clist_lpop(&sched_runqueues[1]);
           }
     }
+    
     //  Stampa delle piorità e dei thread nelle code
      for (int i = 0; i < SCHED_PRIO_LEVELS; i++) 
     {        
@@ -287,11 +256,11 @@ void *__attribute__((used)) sched_run(void)
             }
         }
     }	
-
-    DEBUG("*** TIMER SETTED SUCCESSFULLY *** \n");
-    xtimer_set(&Run, 500000LU); 
+    if ((int)next_thread->pid != 1) {
+        DEBUG("*** TIMER SUCCESSFULLY SET *** \n");
+        xtimer_set(&Run, 500000LU); 
+    }
     return NULL;
- //   return next_thread;
 }
 
 void sched_set_status(thread_t *process, thread_status_t status)

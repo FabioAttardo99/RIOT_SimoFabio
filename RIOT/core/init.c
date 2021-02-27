@@ -62,13 +62,19 @@ static void *main_trampoline(void *arg)
 static char main_stack[THREAD_STACKSIZE_MAIN];
 static char idle_stack[THREAD_STACKSIZE_IDLE];
 
+static int idle_print = 1;
+
 static void *idle_thread(void *arg)
 {
     (void)arg;
-
-    /*while (1) {
+    thread_t *idle = thread_get_active();
+    while (1) {
+        if (idle_print == 1) {
+            printf("THREAD NAME: %s, REMAINING SERVICE TIME: %d \n", idle->name, idle->s_time);
+            idle_print = 0;
+        }
         pm_set_lowest();
-    }*/
+    }
 
     return NULL;
 }

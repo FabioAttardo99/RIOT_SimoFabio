@@ -1,0 +1,144 @@
+void *__attribute__((used)) sched_run(void)
+{   
+    
+/*
+    for (int i = 0; i < SCHED_PRIO_LEVELS; i++) {
+        if ((int)clist_count(&sched_runqueues[i]) != 0)
+        DEBUG(" -- SCHED_RUN -- CODA %d -> %d \n", i, (int)clist_count(&sched_runqueues[i]));
+    }
+*/    
+    for (int i = 0; i < SCHED_PRIO_LEVELS; i++) 
+    {
+
+	DEBUG(" -- SCHED_RUN -- CODA %d -> %d \n", i, (int)clist_count(&sched_runqueues[i]));
+	if((int)clist_count(&sched_runqueues[i]) != 0)
+	{
+		//clist_node_t *list = clist_lpeek(&sched_runqueues[i]);
+		
+		for(int j = 0; j < (int)clist_count(&sched_runqueues[i]);++j)
+		{
+			//clist_node_t *node = list->next;
+			 thread_t *t = container_of(sched_runqueues[i].next->next,
+                                         thread_t, rq_entry);
+			DEBUG(" -- List --Pos: %d -> %d name: %s\n", j, t->pid,t->name);
+			clist_lpoprpush(&sched_runqueues[i]); 
+		}
+	}
+    }	
+    DEBUG("Runqueue: %d, Funzione: %d \n", runqueue_bitcache,_get_prio_queue_from_runqueue());
+
+    thread_t *active_thread = thread_get_active();
+    thread_t *previous_thread = active_thread;
+
+    if (!IS_USED(MODULE_CORE_IDLE_THREAD) && !runqueue_bitcache) {
+        if (active_thread) {
+            _unschedule(active_thread);
+            active_thread = NULL;
+        }
+
+        do {
+            DEBUG("Non ho trovato altri thread!");
+            sched_arch_idle();
+        } while (!runqueue_bitcache);
+    }
+
+    sched_context_switch_request = 0;
+
+    unsigned nextrq = _get_prio_queue_from_runqueue();
+    thread_t *next_thread = container_of(sched_runqueues[nextrq].next->next,
+                                         thread_t, rq_entry);      
+
+    DEBUG( "sched_run: active thread: %" PRIkernel_pid ", next thread: %" PRIkernel_pid "\n",
+        (kernel_pid_t)((active_thread == NULL)
+                       ? KERNEL_PID_UNDEF
+                       : active_thread->pid),
+        next_thread->pid);
+
+//  Se pid main o idle, no decremento servicetime
+    if (active_thread != NULL) {
+        if(!((int)active_thread -> pid == 1 || (int)active_thread -> pid == 2)) {
+            DEBUG("\n Pid: %d, S_TIME: %d \n",(int)active_thread->pid, active_thread -> s_time);
+            if (active_thread -> s_time >= 500) 
+                    active_thread -> s_time -= 500;
+            else {
+                active_thread -> s_time = 0;
+                DEBUG("sched_run: TEMPO DI SERVIZIO TERMINATO! Chiudo il thread %d\n", (int)active_thread);
+                sched_task_exit();
+                return NULL;
+            }
+            DEBUG("\n Pid: %d, S_TIME_AFTER: %d \n",(int)active_thread->pid, active_thread -> s_time);
+    }
+}
+
+    clist_lpoprpush(&sched_runqueues[1]); 
+    next_thread->status = STATUS_RUNNING;
+
+    if (previous_thread == next_thread) {
+#ifdef MODULE_SCHED_CB
+        /* Call the sched callback again only if the active thread is NULL. When
+         * active_thread is NULL, there was a sleep in between descheduling the
+         * previous thread and scheduling the new thread. Call the callback here
+         * again ensures that the time sleeping doesn't count as running the
+         * previous thread
+         */
+        if (sched_cb && !active_thread) {
+            sched_cb(KERNEL_PID_UNDEF, next_thread->pid);
+        }
+#endif
+        DEBUG("sched_run: done, sched_active_thread was not changed.\n");
+    }
+    else {
+        if (active_thread) {
+            _unschedule(active_thread);
+        }
+
+        sched_active_pid = next_thread->pid;
+        sched_active_thread = next_thread;
+
+#ifdef MODULE_SCHED_CB
+        if (sched_cb) {
+            sched_cb(KERNEL_PID_UNDEF, next_thread->pid);
+        }
+#endif
+
+#ifdef PICOLIBC_TLS
+        _set_tls(next_thread->tls);
+#endif
+
+#ifdef MODULE_MPU_STACK_GUARD
+        mpu_configure(
+            2,                                              /* MPU region 2 */
+            (uintptr_t)next_thread->stack_start + 31,       /* Base Address (rounded up) */
+            MPU_ATTR(1, AP_RO_RO, 0, 1, 0, 1, MPU_SIZE_32B) /* Attributes and Size */
+            );
+#endif
+        DEBUG("sched_run: done, changed sched_active_thread.\n");
+    }
+               
+/*
+bool Check = true;
+uint32_t Time = xtimer_now_usec(); 
+while(Check)
+{
+    Time = xtimer_now_usec(); 
+    if(Time >= 1000000)
+    {
+        printf("TIME: %d \n" , Time);
+        Check = false;
+    }
+}
+*/
+    if (active_thread != NULL && !((int)active_thread->pid == 1 || (int)active_thread->pid == 2)) {
+          if (next_thread -> s_time == 0) {
+              DEBUG("sched_run: SERVICE TIME ENDED! Exiting from current task! \n");
+              sched_task_exit();
+              return NULL;
+          }
+    }
+    
+    DEBUG("*** TIMER SETTED SUCCESSFULLY *** \n");
+
+    xtimer_set(&Run, 500000LU); 
+    return NULL;
+ //   return next_thread;
+}

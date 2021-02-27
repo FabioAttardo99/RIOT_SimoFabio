@@ -147,21 +147,20 @@ static void _unschedule(thread_t *active_thread)
     }
 #endif
 }
+
 /*
-typedef void (*xtimer_callback_t)(void*);
-xtimer_t Run = {
-		NULL,
-		0,
-		0,
-		0,
-		0,
-		(xtimer_callback_t) sched_run,
-		NULL
-	};
-uint32_t Time = 500;
-*/
-
-
+ * typedef void (*xtimer_callback_t)(void*);
+ * xtimer_t Run = {
+ *		NULL,
+ *		0,
+ *		0,
+ *		0,
+ *		0,
+ *		(xtimer_callback_t) sched_run,
+ *		NULL
+ *	};
+ * uint32_t Time = 500;
+ */
 
 static void callSchedRun(void *arg) {
     (void) arg;
@@ -172,47 +171,13 @@ static xtimer_t Run = { .callback = callSchedRun};
 
 void *__attribute__((used)) sched_run(void)
 {   
-    xtimer_init();
     
-/*
-    for (int i = 0; i < SCHED_PRIO_LEVELS; i++) {
-        if ((int)clist_count(&sched_runqueues[i]) != 0)
-        DEBUG(" -- SCHED_RUN -- CODA %d -> %d \n", i, (int)clist_count(&sched_runqueues[i]));
-    }
-    
-    for (int i = 0; i < SCHED_PRIO_LEVELS; i++) 
-    {
 
-	DEBUG(" -- SCHED_RUN -- CODA %d -> %d \n", i, (int)clist_count(&sched_runqueues[i]));
-	if((int)clist_count(&sched_runqueues[i]) != 0)
-	{
-		//clist_node_t *list = clist_lpeek(&sched_runqueues[i]);
-		
-		for(int j = 0; j < (int)clist_count(&sched_runqueues[i]);++j)
-		{
-			//clist_node_t *node = list->next;
-			 thread_t *t = container_of(sched_runqueues[i].next->next,
-                                         thread_t, rq_entry);
-			DEBUG(" -- List --Pos: %d -> %d name: %s\n", j, t->pid,t->name);
-			clist_lpoprpush(&sched_runqueues[i]); 
-		}
-	}
-    }	
+   
     DEBUG("Runqueue: %d, Funzione: %d \n", runqueue_bitcache,_get_prio_queue_from_runqueue());
-*/
-
     
     thread_t *active_thread = thread_get_active();
     thread_t *previous_thread = active_thread;
-    clist_lpoprpush(&sched_runqueues[1]); 
-//  Se pid main o idle, no decremento servicetime
-    if (active_thread != NULL) {
-        if(!((int)active_thread -> pid == 1 || (int)active_thread -> pid == 2)) {
-            DEBUG("\n Pid: %d, S_TIME: %d \n",(int)active_thread->pid, active_thread -> s_time);
-            active_thread -> s_time -= 500;
-            DEBUG("\n Pid: %d, S_TIME_AFTER: %d \n",(int)active_thread->pid, active_thread -> s_time);
-    }
-}
 
 
 
@@ -240,6 +205,22 @@ void *__attribute__((used)) sched_run(void)
                        : active_thread->pid),
         next_thread->pid);
 
+//  Se pid main o idle, no decremento servicetime
+/*    if (active_thread != NULL) {
+        if(!((int)active_thread -> pid == 1 || (int)active_thread -> pid == 2)) {
+            DEBUG("\n Pid: %d, S_TIME: %d \n",(int)active_thread->pid, active_thread -> s_time);
+            if (active_thread -> s_time >= 500) 
+                    active_thread -> s_time -= 500;
+            else {
+                active_thread -> s_time = 0;
+                DEBUG("sched_run: TEMPO DI SERVIZIO TERMINATO! Chiudo il thread %d\n", (int)active_thread);
+                sched_task_exit();
+                return NULL;
+            }
+            DEBUG("\n Pid: %d, S_TIME_AFTER: %d \n",(int)active_thread->pid, active_thread -> s_time);
+    }
+}
+*/
     next_thread->status = STATUS_RUNNING;
 
     if (previous_thread == next_thread) {
@@ -283,35 +264,34 @@ void *__attribute__((used)) sched_run(void)
 #endif
         DEBUG("sched_run: done, changed sched_active_thread.\n");
     }
-
-    if ((int)next_thread->pid != 2) {
-    DEBUG("*** TIMER SETTED SUCCESSFULLY *** \n");
-
-    xtimer_set(&Run, 500000LU);
-    }                
-/*
-bool Check = true;
-uint32_t Time = xtimer_now_usec(); 
-while(Check)
-{
-    Time = xtimer_now_usec(); 
-    if(Time >= 1000000)
-    {
-        printf("TIME: %d \n" , Time);
-        Check = false;
+               
+    if (active_thread != NULL && !((int)active_thread->pid == 1 || (int)active_thread->pid == 2)) {
+          if (next_thread -> s_time == 0) {
+              DEBUG("sched_run: SERVICE TIME ENDED! Exiting from current task! \n");
+              sched_task_exit();
+              return NULL;
+          }
     }
-}
-*/
-    if (active_thread != NULL && !((int)active_thread->pid == 1 || (int)active_thread->pid == 2)) checkTask();
+    //  Stampa delle piorità e dei thread nelle code
+     for (int i = 0; i < SCHED_PRIO_LEVELS; i++) 
+    {        
+        if((int)clist_count(&sched_runqueues[i]) != 0)
+        {
+            DEBUG(" -- SCHED_RUN -- CODA %d -> %d \n", i, (int)clist_count(&sched_runqueues[i]));            
+            for(int j = 0; j < (int)clist_count(&sched_runqueues[i]);++j)
+            {
+                thread_t *t = container_of(sched_runqueues[i].next->next,
+                                            thread_t, rq_entry);
+                DEBUG(" -- List --Pos: %d -> %d, name: %s, Service_Time: %d \n", j, t->pid,t->name, t->s_time);
+                clist_lpoprpush(&sched_runqueues[1]);
+            }
+        }
+    }	
+
+    DEBUG("*** TIMER SETTED SUCCESSFULLY *** \n");
+    xtimer_set(&Run, 500000LU); 
     return NULL;
  //   return next_thread;
-}
-
-void checkTask(void) {
-    if (thread_get_active()->s_time == 0) {
-        DEBUG("sched_run: SERVICE TIME ENDED! Exiting from current task! \n");
-        sched_task_exit();
-    }
 }
 
 void sched_set_status(thread_t *process, thread_status_t status)

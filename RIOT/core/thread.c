@@ -187,6 +187,7 @@ uintptr_t thread_measure_stack_free(const char *stack)
 }
 #endif
 
+// La funzione 'thread_create' prevede ora un ulteriore campo indicante la service_time impostata
 kernel_pid_t thread_create(char *stack, int stacksize, uint8_t priority,
                            int flags, thread_task_func_t function, void *arg,
                            const char *name, int s_time)
@@ -268,6 +269,7 @@ kernel_pid_t thread_create(char *stack, int stacksize, uint8_t priority,
     }
 
     sched_threads[pid] = thread;
+
     // Imposto la service time del thread
     thread->s_time = s_time;
     thread->pid = pid;
@@ -284,8 +286,10 @@ kernel_pid_t thread_create(char *stack, int stacksize, uint8_t priority,
 #ifdef CONFIG_THREAD_NAMES
     thread->name = name;
 #endif
-
-    if ((int)pid == 1) thread->priority = 15;// versione originale     thread->priority = priority;
+    /* A meno che il thread creato non sia quello 'idle', tutti hanno la 'priority' impostata
+     * ad 1. Il thread 'idle', invece, ha una priorità impostata a 15.
+     */ 
+    if ((int)pid == 1) thread->priority = 15;
     else thread->priority = 1;
     thread->status = STATUS_STOPPED;
 

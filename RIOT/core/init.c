@@ -62,12 +62,24 @@ static void *main_trampoline(void *arg)
 static char main_stack[THREAD_STACKSIZE_MAIN];
 static char idle_stack[THREAD_STACKSIZE_IDLE];
 
+/* Questa variabile serve per permettere al thread di stampare a video solo un messaggio ad
+ * esecuzione. Se la variabile associata al thread idle ha valore pari ad 1 allora quel thread
+ * può stampare un messaggio. Se, invece, la variabile ha un valore impostato a 0, quel
+ * thread non può stampare alcun messaggio.
+ */ 
 static int idle_print = 1;
 
 static void *idle_thread(void *arg)
 {
     (void)arg;
     thread_t *idle = thread_get_active();
+
+    /* Il ciclo while in questione si occupa di ciclare un singolo thread e di stampare, una
+	 * volta soltanto, un messaggio che indica quale sia il thread in esecuzione. Lo stesso
+	 * messaggio include anche un'informazione sulla service time rimanente, espressa in 
+	 * secondi.
+	 */     
+
     while (1) {
         if (idle_print == 1) {
             printf("THREAD NAME: %s, REMAINING SERVICE TIME: %d \n", idle->name, idle->s_time);

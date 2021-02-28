@@ -27,6 +27,8 @@
 #include "irq.h"
 #include "thread.h"
 #include "log.h"
+
+// La libreria xtimer.h serve per la gestione dei tempi
 #include "xtimer.h"
 
 #ifdef MODULE_MPU_STACK_GUARD
@@ -141,16 +143,20 @@ static void _unschedule(thread_t *active_thread)
 #endif
 }
 
+/* La funzione 'callSchedRun' si occupa di richiamare lo scheduler. */
 static void callSchedRun(void *arg) {
     (void) arg;
     sched_run();
 }
 
+/* L'xtimer 'Run' è utilizzato per richiamare periodicamente la funzione 'callSchedRun' facendo
+ * uso di una specifica 'callback'
+ */  
 static xtimer_t Run = { .callback = callSchedRun};
 
-void *__attribute__((used)) sched_run(void)
+thread_t *__attribute__((used)) sched_run(void)
 {   
-    DEBUG("Runqueue: %d, Funzione: %d \n", runqueue_bitcache,_get_prio_queue_from_runqueue());
+    DEBUG("Runqueue: %d, Funzione: %d \n", runqueue_bitcache, _get_prio_queue_from_runqueue());
     
     thread_t *active_thread = thread_get_active();
     thread_t *previous_thread = active_thread;
@@ -169,7 +175,7 @@ void *__attribute__((used)) sched_run(void)
     sched_context_switch_request = 0;
     unsigned nextrq = 0;
 
-    // Per scegliere la nuova priorit del thread ci si basa sul numero di thread che devono essere
+    // Per scegliere la nuova priorità del thread ci si basa sul numero di thread che devono essere
     // ancora completati:
     // -> Se c'è almeno un thread, la priorità è 1.
     // -> Se non ci sono thread, la priorità è 15 (in modo da poter richiamare l'idle thread)
@@ -185,6 +191,9 @@ void *__attribute__((used)) sched_run(void)
                        : active_thread->pid),
         next_thread->pid);
 
+/* Il codice seguente si occupa di decrementare la service time del thread che ha concluso
+ * la propria esecuzione (cioè l'active_thread)
+ */
 if (active_thread != NULL) {
     if(!((int)active_thread -> pid == 1 || (int)active_thread -> pid == 2)) 
     {
@@ -193,6 +202,7 @@ if (active_thread != NULL) {
             {
                     active_thread -> s_time -= 500;
             }
+            else active_thread -> s_time = 0;
     }
 }
     next_thread->status = STATUS_RUNNING;
@@ -273,7 +283,7 @@ if (active_thread != NULL) {
         DEBUG("*** TIMER SUCCESSFULLY SET *** \n");
         xtimer_set(&Run, 500000LU); 
     }
-    return NULL;
+    return next_thread;
 }
 
 void sched_set_status(thread_t *process, thread_status_t status)
